@@ -16,3 +16,5 @@ See README.md for commands and design.
   markers to stderr to find which call did it.
 - Ranges from shapes/charts (`TopLeftCell`, `BottomRightCell`): only read scalar properties.
 - After `insert`/`delete`, the Range object moved or died; take addresses before the operation.
+- See the new `cgr snap` for checking visual results; always look after formatting work.
+- PowerShell 5.1 strips `"` inside native-program args: run cgr from bash when args contain quotes.

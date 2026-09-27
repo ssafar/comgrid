@@ -192,6 +192,13 @@ class Xl
         o.Line($"closed {name}{(save ? " (saved)" : " without saving")}{(gone ? "; its hidden Excel quit" : "")}");
     }
 
+    public void SaveCopy(string path, Out o)
+    {
+        string full = Path.GetFullPath(path);
+        Book.SaveCopyAs(full);
+        o.Line($"saved a copy of {Book.Name} as {full}");
+    }
+
     // Excel's current selection, wherever it is.
     public static (Xl, dynamic ws, dynamic rng) Selection()
     {

@@ -28,7 +28,7 @@ class Out
 
 class Args
 {
-    static readonly HashSet<string> WithValue = new HashSet<string> { "-b", "--book", "--max", "--depth", "--after", "--timeout" };
+    static readonly HashSet<string> WithValue = new HashSet<string> { "-b", "--book", "--max", "--depth", "--after", "--timeout", "--name", "--style" };
     public readonly List<string> Pos = new List<string>();
     readonly Dictionary<string, string> opts = new Dictionary<string, string>();
 
@@ -61,6 +61,7 @@ workbooks
   books                        workbooks open in any running Excel
   open FILE [--isolated]       open in the running Excel; --isolated: in a new hidden instance
   close [--save]               close the -b workbook (default: without saving)
+  savecopy FILE                save a copy of the workbook, unsaved edits included (it stays open as is)
 
 reading
   outline [SHEET]              sheets, cell islands with headers and row labels, names, tables, charts
@@ -77,8 +78,13 @@ reading
 writing (straight into the live workbook; journaled so `undo` can revert)
   set RANGE VALUE              VALUE or =FORMULA into every cell (relative refs shift, like Ctrl+Enter)
   set CELL -                   TSV from stdin, top-left at CELL; =... cells are formulas
-  fmt RANGE [KEY=VALUE ...]    no pairs: show formats; numfmt=0.0% bold=1 italic=0 color=#RRGGBB fill=#RRGGBB|none
+  fmt RANGE[,RANGE] [KEY=V ...] no pairs: show formats; numfmt=0.0% bold=1 italic=0 color=#RRGGBB fill=#RRGGBB|none
                                size=14 font=Arial width=12 wrap=1 align=left|center|right|general
+  cf RANGE                     list conditional formats
+  cf RANGE add =FORMULA KEY=V  formula rule (refs relative to RANGE's top-left): fill= color= bold= italic=
+  cf RANGE clear               remove the range's conditional formats
+  chart Sheet!NAME [KEY=V ...] show a chart; set title= ytitle= xtitle= yfmt=
+  table RANGE [--name N] [--style S]  make an Excel table (default style TableStyleMedium2)
   insert Sheet!5:7 | Sheet!C:D insert whole rows / columns
   delete Sheet!5:7 | Sheet!C:D delete them (undo restores contents only)
   addsheet NAME [--after SHEET]
@@ -139,6 +145,22 @@ options: --max N (output lines, default 400; 0 = all)  --full (don't shorten tex
     public static void Debug(string step)
     {
         if (debug) { Console.Error.WriteLine($"[{clock.ElapsedMilliseconds,6} ms] {step}"); Console.Error.Flush(); }
+    }
+
+    // "Sheet!A1,Sheet!B2:C3" -> each reference; commas inside 'quoted sheet names' don't split.
+    static List<string> SplitRefs(string s)
+    {
+        var list = new List<string>();
+        var sb = new StringBuilder();
+        bool quoted = false;
+        foreach (char ch in s)
+        {
+            if (ch == '\'') quoted = !quoted;
+            if (ch == ',' && !quoted) { list.Add(sb.ToString()); sb.Clear(); }
+            else sb.Append(ch);
+        }
+        list.Add(sb.ToString());
+        return list.Where(r => r.Length > 0).ToList();
     }
 
     static void Need(List<string> p, int n, string usage)
@@ -211,12 +233,35 @@ options: --max N (output lines, default 400; 0 = all)  --full (don't shorten tex
                 break;
             }
             case "fmt":
+                Need(p, 1, "fmt RANGE[,RANGE...] [KEY=VALUE ...]");
+                foreach (var one in SplitRefs(p[0]))
+                {
+                    var (ws, rng) = x.Resolve(one);
+                    Edit.Fmt(x, ws, rng, p.Skip(1).ToList(), cmdline, o);
+                }
+                break;
+            case "cf":
             {
-                Need(p, 1, "fmt RANGE [KEY=VALUE ...]");
+                Need(p, 1, "cf RANGE [add =FORMULA fill=#RRGGBB ... | clear]");
                 var (ws, rng) = x.Resolve(p[0]);
-                Edit.Fmt(x, ws, rng, p.Skip(1).ToList(), cmdline, o);
+                Objects.Cf(x, ws, rng, p.Skip(1).ToList(), cmdline, o);
                 break;
             }
+            case "chart":
+                Need(p, 1, "chart Sheet!NAME [title=... ytitle=... xtitle=... yfmt=...]");
+                Objects.Chart(x, p[0], p.Skip(1).ToList(), cmdline, o);
+                break;
+            case "table":
+            {
+                Need(p, 1, "table RANGE [--name NAME] [--style TableStyleMedium2]");
+                var (ws, rng) = x.Resolve(p[0]);
+                Objects.Table(x, ws, rng, a.Val("--name"), a.Val("--style"), cmdline, o);
+                break;
+            }
+            case "savecopy":
+                Need(p, 1, "savecopy FILE");
+                x.SaveCopy(p[0], o);
+                break;
             case "insert":
             case "delete":
             {

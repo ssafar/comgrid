@@ -80,6 +80,7 @@ static class Edit
         ["numfmt"] = new Prop { Get = r => r.NumberFormat, Set = (r, v) => r.NumberFormat = v, Parse = s => s },
         ["bold"] = new Prop { Get = r => r.Font.Bold, Set = (r, v) => r.Font.Bold = v, Parse = Bool },
         ["italic"] = new Prop { Get = r => r.Font.Italic, Set = (r, v) => r.Font.Italic = v, Parse = Bool },
+        ["indent"] = new Prop { Get = r => r.IndentLevel, Set = (r, v) => r.IndentLevel = v, Parse = s => int.Parse(s, Cells.Inv) },
         ["size"] = new Prop { Get = r => r.Font.Size, Set = (r, v) => r.Font.Size = v, Parse = s => double.Parse(s, Cells.Inv) },
         ["font"] = new Prop { Get = r => r.Font.Name, Set = (r, v) => r.Font.Name = v, Parse = s => s },
         ["color"] = new Prop { Get = r => r.Font.Color, Set = (r, v) => r.Font.Color = v, Parse = Color },
@@ -89,10 +90,10 @@ static class Edit
         ["align"] = new Prop { Get = r => r.HorizontalAlignment, Set = (r, v) => r.HorizontalAlignment = v, Parse = Align },
     };
 
-    static object Bool(string s) => s == "1" || s.Equals("true", StringComparison.OrdinalIgnoreCase) || s.Equals("yes", StringComparison.OrdinalIgnoreCase);
+    internal static object Bool(string s) => s == "1" || s.Equals("true", StringComparison.OrdinalIgnoreCase) || s.Equals("yes", StringComparison.OrdinalIgnoreCase);
 
     // #RRGGBB; Excel stores colors as 0xBBGGRR.
-    static object Color(string s)
+    internal static object Color(string s)
     {
         s = s.TrimStart('#');
         if (s.Length != 6) throw new CgrError($"color '{s}' should be #RRGGBB");
@@ -314,6 +315,9 @@ static class Edit
                     try { ws.Delete(); } finally { x.App.DisplayAlerts = alerts; }
                     break;
                 }
+                default:
+                    Objects.Undo(x, ws, kind, e);
+                    break;
             }
             entries.RemoveAt(entries.Count - 1);
             Journal.Save(x, entries);

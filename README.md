@@ -41,7 +41,11 @@ pushed `v*` tag publishes a release with the exe attached.
     cgr set Assumptions!C12 0.05              value or =formula (fills relative refs across a range)
     cgr set Sheet!B5 - < block.tsv            a block of values/formulas from stdin
     cgr fmt Sheet!B6:K6 bold=1 fill=#233D59   formatting; `cgr fmt RANGE` alone shows it
+    cgr cf Sheet!B32:G46 add '=$B32=Assumptions!$C$6' fill=#FFF2CC bold=1   conditional format
+    cgr chart Sheet!Chart 'yfmt=$0.0,,"M"' title=...           show or edit a chart
+    cgr table History!B5:G29 --name History                      make an Excel table (banded rows)
     cgr insert Sheet!5:7 / delete Sheet!C:D / addsheet Name
+    cgr savecopy copy.xlsb   then   cgr open copy.xlsb --isolated   try things on a copy
     cgr undo [N] / cgr log
 
     cgr whatif Assumptions!C12=0.02,0.03,0.04 -- Comparison!J7:J11   sweep an input, inputs restored
@@ -93,3 +97,15 @@ On Excel 16.0.20326 (Microsoft 365, click-to-run), reading `.Rows`, `.Columns` o
 `.Cells` on the Range returned by a chart's `ChartObject.TopLeftCell` (or
 `BottomRightCell`) **crashes Excel** with an access violation. Scalar properties such as
 `.Row` and `.Address` are fine. cgr only reads `.Row` / `.Column` there.
+
+Also learned the hard way, all on the same Excel build:
+
+- **Conditional-format formulas are relative to the range they apply to**, both in
+  `FormatConditions.Add` and when reading `Formula1`. Much VBA advice says "relative to
+  the active cell"; rebasing formulas that way broke the rules silently.
+- **`ListObject.Unlist()` bakes the table style into the cells** as plain formatting, so
+  "undo a table" left stripes behind. Setting `TableStyle = ""` first leaves the cells
+  exactly as they were.
+- **Windows PowerShell 5.1 strips embedded double quotes** from arguments to native
+  programs: `cgr ... 'yfmt=$0,"K"'` arrives as `yfmt=$0,K`. Pass such arguments from
+  another shell (or PowerShell 7).
