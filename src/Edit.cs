@@ -80,6 +80,7 @@ static class Edit
         ["numfmt"] = new Prop { Get = r => r.NumberFormat, Set = (r, v) => r.NumberFormat = v, Parse = s => s },
         ["bold"] = new Prop { Get = r => r.Font.Bold, Set = (r, v) => r.Font.Bold = v, Parse = Bool },
         ["italic"] = new Prop { Get = r => r.Font.Italic, Set = (r, v) => r.Font.Italic = v, Parse = Bool },
+        ["height"] = new Prop { Get = r => r.RowHeight, Set = (r, v) => r.RowHeight = v, Parse = s => double.Parse(s, Cells.Inv) },
         ["indent"] = new Prop { Get = r => r.IndentLevel, Set = (r, v) => r.IndentLevel = v, Parse = s => int.Parse(s, Cells.Inv) },
         ["size"] = new Prop { Get = r => r.Font.Size, Set = (r, v) => r.Font.Size = v, Parse = s => double.Parse(s, Cells.Inv) },
         ["font"] = new Prop { Get = r => r.Font.Name, Set = (r, v) => r.Font.Name = v, Parse = s => s },

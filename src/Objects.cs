@@ -83,6 +83,13 @@ static class Objects
         return style;
     }
 
+    const int xlCellValue = 1;
+
+    static readonly Dictionary<int, string> Operators = new Dictionary<int, string>
+    {
+        [1] = "between", [2] = "not between", [3] = "=", [4] = "<>", [5] = ">", [6] = "<", [7] = ">=", [8] = "<=",
+    };
+
     static readonly Dictionary<int, string> CfTypes = new Dictionary<int, string>
     {
         [1] = "cell value", [2] = "formula", [3] = "color scale", [4] = "data bar", [5] = "top 10",
@@ -101,6 +108,12 @@ static class Objects
             string applies = ((string)fc.AppliesTo.Address).Replace("$", "");
             string what = CfTypes.TryGetValue(type, out var t) ? t : "type " + type;
             if (type == xlExpression) what = fc.Formula1;
+            if (type == xlCellValue)
+            {
+                int op = fc.Operator;
+                string f1 = fc.Formula1, f2 = op <= 2 ? (string)fc.Formula2 : null;
+                what = "value " + (Operators.TryGetValue(op, out var sym) ? sym : "op" + op) + " " + f1 + (f2 != null ? " and " + f2 : "");
+            }
             Dictionary<string, object> read = ReadStyle(fc);
             var style = read.Select(kv => kv.Key + "=" + Show(kv.Key, kv.Value));
             o.Line($"  [{i}] {applies}  {what}  {string.Join(" ", style)}");

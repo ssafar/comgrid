@@ -292,7 +292,18 @@ class Xl
         rng.Formula = value;
     }
 
+    // Excel answers 0x800AC472 ("busy") while it recalculates, e.g. right after a write
+    // that changed an input. Unlike RPC rejections, the message filter never sees it.
     public static Block Read(dynamic rng, bool r1c1 = true)
+    {
+        for (int tries = 1; ; tries++)
+        {
+            try { return ReadOnce(rng, r1c1); }
+            catch (COMException e) when ((uint)e.HResult == 0x800AC472 && tries < 20) { System.Threading.Thread.Sleep(250); }
+        }
+    }
+
+    static Block ReadOnce(dynamic rng, bool r1c1)
     {
         int rows = rng.Rows.Count, cols = rng.Columns.Count;
         var b = new Block { Ws = rng.Worksheet, Sheet = rng.Worksheet.Name, Row = rng.Row, Col = rng.Column, Rows = rows, Cols = cols };

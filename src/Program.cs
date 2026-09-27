@@ -79,7 +79,7 @@ writing (straight into the live workbook; journaled so `undo` can revert)
   set RANGE VALUE              VALUE or =FORMULA into every cell (relative refs shift, like Ctrl+Enter)
   set CELL -                   TSV from stdin, top-left at CELL; =... cells are formulas
   fmt RANGE[,RANGE] [KEY=V ...] no pairs: show formats; numfmt=0.0% bold=1 italic=0 color=#RRGGBB fill=#RRGGBB|none
-                               size=14 font=Arial width=12 wrap=1 align=left|center|right|general
+                               size=14 font=Arial width=12 height=21 indent=1 wrap=1 align=left|center|right|general
   cf RANGE                     list conditional formats
   cf RANGE add =FORMULA KEY=V  formula rule (refs relative to RANGE's top-left): fill= color= bold= italic=
   cf RANGE clear               remove the range's conditional formats
