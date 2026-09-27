@@ -70,6 +70,8 @@ reading
   trace CELL [--depth N]       what a cell's formula reads (N levels, default 1)
   trace CELL --dependents      which formulas read the cell
   calc [--now]                 calculation mode; --now recalculates
+  changes [--reset]            cells edited since the last `changes` (cgr's own writes excluded);
+                               the first run just takes a baseline
 
 writing (straight into the live workbook; journaled so `undo` can revert)
   set RANGE VALUE              VALUE or =FORMULA into every cell (relative refs shift, like Ctrl+Enter)
@@ -161,8 +163,14 @@ options: --max N (output lines, default 400; 0 = all)  --full (don't shorten tex
             return;
         }
         var x = Xl.Attach(a.Val("-b") ?? a.Val("--book") ?? Environment.GetEnvironmentVariable("CGR_BOOK"));
+        // Commands that change formulas keep `cgr changes` from reporting them as the user's.
+        bool changesFormulas = new[] { "set", "insert", "delete", "addsheet", "undo" }.Contains(cmd);
+        using (changesFormulas ? Snapshot.Around(x) : null)
         switch (cmd)
         {
+            case "changes":
+                Snapshot.Changes(x, a.Has("--reset"), o);
+                break;
             case "outline":
                 Look.Outline(x, p.FirstOrDefault(), o);
                 break;

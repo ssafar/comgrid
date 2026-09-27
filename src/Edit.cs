@@ -413,17 +413,20 @@ static class Journal
 {
     static readonly JavaScriptSerializer Json = new JavaScriptSerializer { MaxJsonLength = int.MaxValue };
 
-    static string PathFor(Xl x)
+    // %LOCALAPPDATA%\comgrid\<kind>\<workbook name>-<hash of full path><ext>
+    public static string FileFor(Xl x, string kind, string ext)
     {
         string full = x.Book.FullName;
-        string dir = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "comgrid", "journal");
+        string dir = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "comgrid", kind);
         Directory.CreateDirectory(dir);
         string hash;
         using (var sha = SHA1.Create())
             hash = BitConverter.ToString(sha.ComputeHash(Encoding.UTF8.GetBytes(full.ToLowerInvariant()))).Replace("-", "").Substring(0, 8);
         string safe = string.Concat(System.IO.Path.GetFileName(full).Select(ch => System.IO.Path.GetInvalidFileNameChars().Contains(ch) ? '_' : ch));
-        return System.IO.Path.Combine(dir, $"{safe}-{hash}.jsonl");
+        return System.IO.Path.Combine(dir, $"{safe}-{hash}{ext}");
     }
+
+    static string PathFor(Xl x) => FileFor(x, "journal", ".jsonl");
 
     public static void Push(Xl x, Dictionary<string, object> entry) =>
         File.AppendAllText(PathFor(x), Json.Serialize(entry) + "\n", new UTF8Encoding(false));

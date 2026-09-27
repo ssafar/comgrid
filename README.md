@@ -35,6 +35,7 @@ pushed `v*` tag publishes a release with the exe attached.
     cgr find IRR                              formulas/values containing text (numbers match by value)
     cgr trace Comparison!J7 --depth 2         what a formula reads
     cgr trace Assumptions!C12 --dependents    what reads a cell
+    cgr changes                               cells you edited since the last `changes` (not cgr's writes)
 
     cgr set Assumptions!C12 0.05              value or =formula (fills relative refs across a range)
     cgr set Sheet!B5 - < block.tsv            a block of values/formulas from stdin
@@ -78,6 +79,12 @@ A dump looks like this:
   record the formulas before and after; `undo` refuses if the cells changed since the
   write, unless `--force`. Deleting rows can only be undone for contents: formats, and
   references the delete turned into `#REF!`, stay as they are.
+
+- **Changes.** `cgr changes` diffs every formula and constant against a per-workbook
+  snapshot in `%LOCALAPPDATA%\comgrid\snapshots`. Around each cgr write, the edits made
+  so far are set aside as text and the snapshot is re-taken, so cgr's own writes never
+  show up, even an inserted row that makes Excel rewrite references everywhere. It
+  tracks contents, not formatting.
 
 ## Excel bugs found along the way
 

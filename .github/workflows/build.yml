@@ -14,7 +14,7 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Build
         shell: cmd
@@ -29,7 +29,7 @@ jobs:
           bin\cgr.exe --version
           bin\cgr.exe selftest
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: cgr
           path: bin/cgr.exe
