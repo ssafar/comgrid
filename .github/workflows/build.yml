@@ -1,0 +1,42 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write   # creating releases on tags
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        shell: cmd
+        env:
+          CGR_VERSION: ${{ github.ref_type == 'tag' && github.ref_name || format('dev-{0}', github.sha) }}
+        run: build.bat
+
+      # The runners have no Excel, so this covers the parts that don't need COM.
+      - name: Self-test
+        shell: cmd
+        run: |
+          bin\cgr.exe --version
+          bin\cgr.exe selftest
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cgr
+          path: bin/cgr.exe
+
+      - name: Release
+        if: github.ref_type == 'tag'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${{ github.ref_name }}" bin/cgr.exe --title "cgr ${{ github.ref_name }}" --generate-notes

@@ -126,6 +126,7 @@ static class Cells
         if (first < 0) return Literal(sec);                                 // e.g. a "–" zero section
         int last = sec.LastIndexOfAny("0#?".ToCharArray());
         string span = sec.Substring(first, last - first + 1);
+        if (minus) d = -d;   // the sign is added back below, outside any prefix like "$"
         if (core.Contains("%")) d *= 100;
         int dot = span.IndexOf('.');
         int decimals = dot < 0 ? 0 : span.Length - dot - 1;

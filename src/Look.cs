@@ -190,7 +190,7 @@ static class Look
     // One line per run of cells that share a formula (compared in R1C1, so filled-down
     // formulas match) or a constant, numeric sequences as "a, b, … z", and lone constants
     // in one row joined as "x | y | z".
-    static void Collapsed(Block b, Out o)
+    internal static void Collapsed(Block b, Out o)
     {
         int n = b.Rows, m = b.Cols;
         var key = new string[n, m];
@@ -333,7 +333,7 @@ static class Look
         for (int i = it.R1; i <= it.R2 && !numeric; i++)
             for (int j = it.C1; j <= it.C2 && !numeric; j++)
                 numeric = b.V[i, j] is double;
-        if (!numeric) return null;
+        if (!numeric || b.Ws == null) return null;
         object nf = b.Ws.Range[Cells.Addr(b.Row + it.R1, b.Col + it.C1, b.Row + it.R2, b.Col + it.C2)].NumberFormat;
         return nf as string ?? "mixed formats";
     }

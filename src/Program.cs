@@ -98,6 +98,8 @@ options: --max N (output lines, default 400; 0 = all)  --full (don't shorten tex
     {
         Console.OutputEncoding = new UTF8Encoding(false);
         var a = new Args(argv);
+        if (a.Has("--version")) { Console.WriteLine("cgr " + BuildInfo.Version); return 0; }
+        if (a.Pos.Count > 0 && a.Pos[0] == "selftest") return SelfTest.Run();
         if (a.Pos.Count == 0 || a.Has("--help") || a.Pos[0] == "help")
         {
             Console.Write(Usage);

@@ -20,6 +20,10 @@ Windows, .NET Framework 4.8 (ships with Windows 10/11), and the Roslyn compiler 
 Visual Studio or the free Build Tools. No SDK, no NuGet:
 
     build.bat        ->  bin\cgr.exe  (~100 KB)
+    bin\cgr.exe selftest               checks that don't need Excel (what CI runs)
+
+Or download `cgr.exe` from the Releases page. GitHub Actions builds every push, and a
+pushed `v*` tag publishes a release with the exe attached.
 
 ## Use
 
