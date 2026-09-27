@@ -32,6 +32,7 @@ pushed `v*` tag publishes a release with the exe attached.
     cgr dump "'Annual model'!B14:AI65"        collapsed formulas with values and number formats
     cgr dump Comparison!B6:K11 --grid         values as displayed, tab-separated
     cgr sel                                   whatever is selected in Excel right now
+    cgr snap Sheet!A1:P50 out.png             the range as rendered, as a picture (uses the clipboard)
     cgr find IRR                              formulas/values containing text (numbers match by value)
     cgr trace Comparison!J7 --depth 2         what a formula reads
     cgr trace Assumptions!C12 --dependents    what reads a cell

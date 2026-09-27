@@ -66,6 +66,7 @@ reading
   outline [SHEET]              sheets, cell islands with headers and row labels, names, tables, charts
   dump RANGE [--grid]          formulas collapsed into runs, with values; --grid: values as a TSV grid
   sel [--grid]                 dump whatever is selected in Excel right now
+  snap RANGE FILE.png          the range as rendered on screen, as a picture (uses the clipboard)
   find TEXT                    cells whose formula or value contains TEXT (numbers match by value)
   trace CELL [--depth N]       what a cell's formula reads (N levels, default 1)
   trace CELL --dependents      which formulas read the cell
@@ -77,7 +78,7 @@ writing (straight into the live workbook; journaled so `undo` can revert)
   set RANGE VALUE              VALUE or =FORMULA into every cell (relative refs shift, like Ctrl+Enter)
   set CELL -                   TSV from stdin, top-left at CELL; =... cells are formulas
   fmt RANGE [KEY=VALUE ...]    no pairs: show formats; numfmt=0.0% bold=1 italic=0 color=#RRGGBB fill=#RRGGBB|none
-                               width=12 wrap=1 align=left|center|right|general
+                               size=14 font=Arial width=12 wrap=1 align=left|center|right|general
   insert Sheet!5:7 | Sheet!C:D insert whole rows / columns
   delete Sheet!5:7 | Sheet!C:D delete them (undo restores contents only)
   addsheet NAME [--after SHEET]
@@ -190,6 +191,13 @@ options: --max N (output lines, default 400; 0 = all)  --full (don't shorten tex
                 Need(p, 1, "trace CELL [--depth N] [--dependents]");
                 var (ws, rng) = x.Resolve(p[0]);
                 Refs.Trace(x, ws, rng, a.Int("--depth", 1), a.Has("--dependents"), o);
+                break;
+            }
+            case "snap":
+            {
+                Need(p, 2, "snap RANGE FILE.png");
+                var (ws, rng) = x.Resolve(p[0]);
+                Snap.Picture(ws, rng, p[1], o);
                 break;
             }
             case "calc":

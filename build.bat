@@ -18,4 +18,4 @@ if not exist obj mkdir obj
 > obj\Version.cs echo [assembly: System.Reflection.AssemblyInformationalVersion("%CGR_VERSION%")]
 >> obj\Version.cs echo static class BuildInfo { public const string Version = "%CGR_VERSION%"; }
 "%CSC%" -nologo -langversion:latest -optimize -warn:4 -out:bin\cgr.exe ^
-    -r:Microsoft.CSharp.dll -r:System.Web.Extensions.dll src\*.cs obj\Version.cs
+    -r:Microsoft.CSharp.dll -r:System.Web.Extensions.dll -r:System.Windows.Forms.dll -r:System.Drawing.dll src\*.cs obj\Version.cs
